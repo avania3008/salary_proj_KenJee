@@ -71,6 +71,7 @@ np.mean(cross_val_score(rf, x_train, y_train, scoring = "neg_mean_absolute_error
 param_grid = {"n_estimators":list(range(10,300,10)),
               "criterion":('squared_error','absolute_error'),
               "max_features":('auto','sqrt','log2')}
+}
 
 gs = GridSearchCV(rf, param_grid, scoring = "neg_mean_absolute_error", cv = 7)
 gs.fit(x_train, y_train)
@@ -80,8 +81,6 @@ print("Best estimator : ", gs.best_estimator_)
 #Best parameters :  {'criterion': 'absolute_error', 'max_features': 'auto', 'n_estimators': 70}
 #Best estimator :  RandomForestRegressor(criterion='absolute_error', n_estimators=70)
 
-
-#test ensembles
 pred_lm = lm.predict(x_test)
 pred_lasso = lasso2.predict(x_test)
 pred_rf = gs.best_estimator_.predict(x_test)
