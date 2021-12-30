@@ -1,0 +1,6 @@
+1. Open anaconda prompt
+2. cd OneDrive/Dokumen/Vania/GitHub/salary_proj_KenJee/FlaskAPI
+3. type "python wsgi.py"
+4. Open new anaconda prompt
+5. type "curl -X GET http://127.0.0.1:5000/predict"
+6. see the response
