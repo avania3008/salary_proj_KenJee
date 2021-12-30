@@ -13,6 +13,7 @@ import statsmodels.api as sm
 from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
+import pickle
 
 df = pd.read_csv("eda_data.csv")
 df.columns
@@ -57,6 +58,7 @@ err = tuple(zip(alpha, error))
 #alpha 0.07 has the least value of error (negative)
 
 lasso2 = Lasso(alpha = 0.07)
+lasso2.fit(x_train, y_train)
 np.mean(cross_val_score(lasso2, x_train, y_train, scoring = "neg_mean_absolute_error", cv = 7))
 
 #random forest
@@ -67,23 +69,40 @@ np.mean(cross_val_score(rf, x_train, y_train, scoring = "neg_mean_absolute_error
 #tune model (GridSearch cross validation)
 #parameters to be tuned from RandomForestRegressor
 param_grid = {"n_estimators":list(range(10,300,10)),
-              "criterion":('mse','mae'),
-              "max_features":('auto','sqrt','log2'),
-              "max_depth":range(100,500,100)}
+              "criterion":('squared_error','absolute_error'),
+              "max_features":('auto','sqrt','log2')}
+}
 
 gs = GridSearchCV(rf, param_grid, scoring = "neg_mean_absolute_error", cv = 7)
 gs.fit(x_train, y_train)
 print("Best parameters : ", gs.best_params_)
 print("Best score : ", gs.best_score_)
+print("Best estimator : ", gs.best_estimator_)
+#Best parameters :  {'criterion': 'absolute_error', 'max_features': 'auto', 'n_estimators': 70}
+#Best estimator :  RandomForestRegressor(criterion='absolute_error', n_estimators=70)
 
-#test ensembles
 pred_lm = lm.predict(x_test)
 pred_lasso = lasso2.predict(x_test)
 pred_rf = gs.best_estimator_.predict(x_test)
 
 #calculate error between predicted and y_test
-mean_absolute_error(y_test, pred_lm)
-mean_absolute_error(y_test, pred_lasso)
-mean_absolute_error(y_test, pred_rf)
-
+print("MAE Multiple Regression : ", mean_absolute_error(y_test, pred_lm))
+print("MAE Lasso Regression : ", mean_absolute_error(y_test, pred_lasso))
+print("MAE Random Forest : ", mean_absolute_error(y_test, pred_rf))
 #random forest model performs the best
+
+#production
+#https://towardsdatascience.com/productionize-a-machine-learning-model-with-flask-and-heroku-8201260503d2
+#pickle the model
+best_rf = RandomForestRegressor(criterion='absolute_error', n_estimators=70)
+best_rf.fit(x_train, y_train)
+pick = {"model" : best_rf}
+pickle.dump(pick, open("model_file" + ".p" , "wb"))
+
+file_name = "model_file.p"
+with open(file_name, "rb") as pickled:
+    data = pickle.load(pickled)
+    model = data["model"]
+    
+model.predict(x_test.iloc[1,:].values.reshape(1,-1))
+#predicted salary : 179.71
