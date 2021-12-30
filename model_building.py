@@ -71,7 +71,6 @@ np.mean(cross_val_score(rf, x_train, y_train, scoring = "neg_mean_absolute_error
 param_grid = {"n_estimators":list(range(10,300,10)),
               "criterion":('squared_error','absolute_error'),
               "max_features":('auto','sqrt','log2')}
-}
 
 gs = GridSearchCV(rf, param_grid, scoring = "neg_mean_absolute_error", cv = 7)
 gs.fit(x_train, y_train)
@@ -105,4 +104,4 @@ with open(file_name, "rb") as pickled:
     model = data["model"]
     
 model.predict(x_test.iloc[1,:].values.reshape(1,-1))
-#predicted salary : 179.71
+#predicted salary : 179.785
